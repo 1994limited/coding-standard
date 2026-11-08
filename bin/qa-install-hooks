@@ -1,0 +1,30 @@
+#!/usr/bin/env php
+<?php
+
+// Copies the shared pre-push hook into this repo's .git/hooks.
+// Run it from the repo root, or wire it into composer's post-install-cmd
+// and post-update-cmd so everyone who installs gets it.
+// An existing pre-push hook that we didn't write is left alone.
+
+$root = getcwd();
+$gitDir = trim((string) shell_exec('git rev-parse --git-common-dir 2>/dev/null'));
+
+if ($gitDir === '' || getenv('CI')) {
+    exit(0); // not a git checkout, or running in CI: nothing to install
+}
+
+$gitDir = str_starts_with($gitDir, '/') ? $gitDir : $root.'/'.$gitDir;
+$source = dirname(__DIR__).'/hooks/pre-push';
+$target = $gitDir.'/hooks/pre-push';
+$marker = '1994/coding-standard';
+
+if (is_file($target) && ! str_contains((string) file_get_contents($target), $marker)) {
+    fwrite(STDERR, "qa-install-hooks: {$target} already exists and isn't ours, leaving it\n");
+    exit(0);
+}
+
+@mkdir(dirname($target), 0755, true);
+copy($source, $target);
+chmod($target, 0755);
+
+echo "qa-install-hooks: pre-push hook installed\n";

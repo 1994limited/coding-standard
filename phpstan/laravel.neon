@@ -1,0 +1,6 @@
+# Base settings plus Larastan, for Laravel apps and Laravel-based packages.
+# Needs larastan/larastan in the repo's require-dev.
+
+includes:
+    - base.neon
+    - ../../../larastan/larastan/extension.neon

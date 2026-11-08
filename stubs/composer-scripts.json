@@ -1,0 +1,30 @@
+{
+    "scripts": {
+        "lint": "pint",
+        "lint:check": "pint --test",
+        "analyse": "phpstan analyse --no-progress --memory-limit=1G",
+        "test": "pest",
+        "ci:quality": [
+            "@lint:check",
+            "@analyse"
+        ],
+        "ci:test": [
+            "@test"
+        ],
+        "ci": [
+            "@ci:quality",
+            "@ci:test"
+        ],
+        "ci:lowest": [
+            "@composer update --prefer-lowest --prefer-stable --no-interaction --no-progress",
+            "@ci:test",
+            "@composer update --no-interaction --no-progress"
+        ],
+        "post-install-cmd": [
+            "qa-install-hooks"
+        ],
+        "post-update-cmd": [
+            "qa-install-hooks"
+        ]
+    }
+}

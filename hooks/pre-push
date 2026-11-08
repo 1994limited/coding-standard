@@ -1,0 +1,19 @@
+#!/bin/sh
+# Installed by vendor/bin/qa-install-hooks from 1994/coding-standard.
+#
+# Runs the same `composer ci` that the shared GitHub workflow runs, so a push
+# that passes here passes the quality job and one test leg in CI. The other
+# matrix legs (older PHP, lowest deps, other framework versions) only run in
+# CI; use `composer ci:lowest` to try the lowest-deps leg yourself.
+#
+# Skip once with: git push --no-verify
+
+set -e
+
+if ! composer run-script --list 2>/dev/null | grep -qE '^\s*ci\b'; then
+    echo "pre-push: no \"ci\" script in composer.json, skipping checks" >&2
+    exit 0
+fi
+
+echo "pre-push: running composer ci (skip with --no-verify)"
+exec composer ci

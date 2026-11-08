@@ -1,0 +1,87 @@
+# Reusable PHP CI for 1994 and Porro packages.
+#
+# Calls the repo's own composer scripts, so CI and `composer ci` locally
+# run exactly the same commands:
+#   quality job  -> composer ci:quality   (once, on quality-php)
+#   test matrix  -> composer ci:test      (once per matrix entry)
+#
+# Callers: see stubs/ci.yml.
+
+name: php
+
+on:
+  workflow_call:
+    inputs:
+      matrix:
+        description: >-
+          JSON array of test legs. Each: {"php": "8.4", "require": "vendor/pkg:1.* ...",
+          "deps": "highest|lowest", "insecure": true}. "insecure" lets Composer install
+          versions with security advisories (for testing EOL framework versions we support).
+        type: string
+        required: true
+      quality-php:
+        description: PHP version for the code style and static analysis job.
+        type: string
+        default: '8.4'
+      extensions:
+        type: string
+        default: mbstring, sodium, pdo_sqlite
+      working-directory:
+        type: string
+        default: .
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Code style & static analysis
+    runs-on: ubuntu-latest
+    env:
+      COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.GITHUB_TOKEN }}"}}'
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: ${{ inputs.quality-php }}
+          extensions: ${{ inputs.extensions }}
+          coverage: none
+      - run: composer update --prefer-dist --no-interaction --no-progress
+      - run: composer ci:quality
+
+  test:
+    name: PHP ${{ matrix.php }}${{ matrix.require && format(' · {0}', matrix.require) || '' }}${{ matrix.deps == 'lowest' && ' · lowest' || '' }}
+    runs-on: ubuntu-latest
+    env:
+      COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.GITHUB_TOKEN }}"}}'
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(inputs.matrix) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ inputs.extensions }}
+          coverage: none
+      - if: matrix.insecure
+        run: composer config audit.block-insecure false
+      - if: matrix.require
+        env:
+          REQUIRE: ${{ matrix.require }}
+        run: composer require $REQUIRE --dev --no-update --no-interaction
+      - env:
+          LOWEST: ${{ matrix.deps == 'lowest' && '--prefer-lowest --prefer-stable' || '' }}
+        run: composer update --prefer-dist --no-interaction --no-progress $LOWEST
+      - run: composer ci:test

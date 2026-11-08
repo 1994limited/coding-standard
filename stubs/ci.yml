@@ -1,0 +1,26 @@
+# Copy to .github/workflows/ci.yml and edit the matrix.
+# Each entry: php (required), require (extra packages to pin, optional),
+# deps ("highest" or "lowest", optional).
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    uses: 1994limited/coding-standard/.github/workflows/php.yml@v1
+    with:
+      quality-php: '8.4'
+      matrix: |
+        [
+          {"php": "8.2", "require": "laravel/framework:11.* orchestra/testbench:9.*"},
+          {"php": "8.3", "require": "laravel/framework:12.* orchestra/testbench:10.*"},
+          {"php": "8.4", "require": "laravel/framework:13.* orchestra/testbench:11.*"},
+          {"php": "8.2", "deps": "lowest"}
+        ]

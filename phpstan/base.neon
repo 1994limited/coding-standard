@@ -1,0 +1,20 @@
+# Shared PHPStan settings. Each repo sets its own `level` and `paths`:
+#
+#   includes:
+#       - vendor/1994/coding-standard/phpstan/base.neon
+#   parameters:
+#       level: 6
+#       paths: [src]
+#
+# Floor: level 6 for packages, 8 for *-core. Don't lower a level to get
+# green; generate a baseline instead and shrink it over time.
+
+parameters:
+    # Trust native types, not docblocks, when deciding what's always true.
+    treatPhpDocTypesAsCertain: false
+
+    # A baseline entry or ignore that no longer matches is noise; fail on it
+    # so baselines only ever shrink.
+    reportUnmatchedIgnoredErrors: true
+
+    tmpDir: .phpstan-cache

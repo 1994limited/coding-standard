@@ -1,0 +1,22 @@
+{
+    "name": "1994/coding-standard",
+    "description": "Shared code style, static analysis and CI checks for 1994 and Porro PHP packages.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.2",
+        "laravel/pint": "^1.18",
+        "phpstan/phpstan": "^2.1"
+    },
+    "suggest": {
+        "larastan/larastan": "Needed if you include phpstan/laravel.neon (Laravel apps and packages)."
+    },
+    "bin": [
+        "bin/qa-install-hooks"
+    ],
+    "extra": {
+        "branch-alias": {
+            "dev-main": "1.x-dev"
+        }
+    }
+}
