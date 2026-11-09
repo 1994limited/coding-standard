@@ -82,6 +82,16 @@ and run `composer ci` again.
 `insecure` turns off Composer's advisory block for that leg. Use it for
 end-of-life framework versions we still support, such as Laravel 11.
 
+`extensions` replaces the workflow's `extensions` input for one leg, e.g.
+`{"php": "8.4", "extensions": ":sodium"}` to test without sodium.
+
+## Repos that need their own test job
+
+If tests need a service container or a scaffolded app (Craft with
+Postgres, for example), the reusable workflow can't build it. Keep your own
+workflow, but follow the same rule: one job runs `composer ci:quality`, and
+the test job's last step runs `composer ci:test`.
+
 ## Exceptions
 
 - **porro-wordpress-connector** must keep running on PHP 5.6, and Pint would

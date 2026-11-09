@@ -15,8 +15,10 @@ on:
       matrix:
         description: >-
           JSON array of test legs. Each: {"php": "8.4", "require": "vendor/pkg:1.* ...",
-          "deps": "highest|lowest", "insecure": true}. "insecure" lets Composer install
-          versions with security advisories (for testing EOL framework versions we support).
+          "deps": "highest|lowest", "insecure": true, "extensions": "..."}. "insecure" lets
+          Composer install versions with security advisories (for testing EOL framework
+          versions we support). "extensions" replaces the extensions input for that leg
+          (e.g. ":sodium" to test without an extension).
         type: string
         required: true
       quality-php:
@@ -73,7 +75,7 @@ jobs:
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: ${{ inputs.extensions }}
+          extensions: ${{ matrix.extensions || inputs.extensions }}
           coverage: none
       - if: matrix.insecure
         run: composer config audit.block-insecure false
